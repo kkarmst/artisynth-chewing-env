@@ -33,7 +33,7 @@ function [forwICP, forwICV,forwExcitations] = ...
     dt = t(end) - t(end-1);
     muscles = createmusclestruct('musclekey.csv');
     
-    ah = artisynth('-model',forwardModelName);
+    ah = artisynth('-disableHybridSolves', '-noGui' ,'-model',forwardModelName);
     ah.find('.').setMaxStepSize (dt);
 
     for m = 1:length(muscles)

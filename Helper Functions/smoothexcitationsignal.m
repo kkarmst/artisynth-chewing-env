@@ -8,7 +8,7 @@ function [smoothExcitations] = smoothexcitationsignal(invExcitations)
     smoothExcitations(:,1) = invExcitations(:,1);
     
     for i = 1:size(invExcitations,2)
-         [smoothExcitations(:,i),window] = smoothdata(invExcitations(:,i),'gaussian',400);
+         [smoothExcitations(:,i),window] = smoothdata(invExcitations(:,i));
 %          window
     end
 end

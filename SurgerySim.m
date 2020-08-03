@@ -11,11 +11,13 @@
 % are shown below in the MUSCLES TO DEACTIVATE section below.
 
 %-------------------------SCRIPT DEFINITIONS------------------------------  
-simDur  = 0.75;
+simDur  = 0.5;
 dt = 0.001;
 t = [0:dt:simDur];
-targetdatapath = 'C:\develop\artisynth\Patient Data\lowerincisor_position_des0.txt'
+workingdir = '';
+targetdatapath = strcat(workingdir,'\lowerincisor_position_openclose_des0.txt')
 debug = 0;
+smoothExcitations = 1;
 %-------------------------MUSCLE DEFINITIONS------------------------------  
 muscles = createmusclestruct('Muscle Info\musclekey.csv'); 
  
@@ -28,8 +30,8 @@ mylohyoid  = muscles([19:22]);
 geniohyoid = muscles([23:24]);
 
 % Masseter, Medial Pterygoid, and Temporalis
-righttJawOpeners = muscles([1 3 5 7 9 11]);
-lefttJawOpeners = muscles([2 4 6 8 10 12]);
+rightJawOpeners = muscles([1 3 5 7 9 11]);
+leftJawOpeners = muscles([2 4 6 8 10 12]);
 jawOpeners = muscles([1 2 3 4 5 6 7 8 9 10 11 12]);
 
 % Digastricus, Geniohyoid, Lateral pterygoid, Mylohyoid
@@ -48,8 +50,8 @@ leftmasseterandpter = muscles([8 10 12 14 16]);
 
 
 %***********CHANGE THE NEXT TWO LINES TO SIMULATE SURGERY CASE*************
-musclesToDeactivate = leftmasseterandpter; 
-plotTitle = 'Unilateral Masseter and Pterygoid Resection (Left Side)';
+musclesToDeactivate = muscles([20 22]);
+plotTitle = 'Unilateral Mylohyoid Resection (Left Side)';
 
 %-------------------------ARTISYNTH MODEL NAMES---------------------------
 invModelName = ...
@@ -64,23 +66,31 @@ mkdir(outputFileName);
 [preopInvExcitations,preopInvICP,preopInvICV] = ...
     inversesim(t,invModelName,targetdatapath,muscles([]),debug);
 
-% preopSmoothExcit = smoothexcitationsignal(preopInvExcitations);
+if (smoothExcitations == 1)
+    preopInvExcit = smoothexcitationsignal(preopInvExcitations);
+else
+    preopInvExcit = preopInvExcitations;
+end
 
 [goalICP,preopICV,preopExcit] = ...
-	forwardsim(t,forwardModelName,preopInvExcitations,muscles([]),debug);
+	forwardsim(t,forwardModelName,preopInvExcit,muscles([]),debug);
 
 %---------------------------------POSTOP------------------------------
 [postopICPForw,postopICV,postopExcit] = ...
-    forwardsim(t,forwardModelName,preopInvExcitations,musclesToDeactivate,debug);
+    forwardsim(t,forwardModelName,preopInvExcit,musclesToDeactivate,debug);
     
 %---------------------------INVERSE COMPENSATION-----------------------
 [compensatedExcit,compensatedExcitICP,compensatedExcitICV] = ...
     inversesim(t,invModelName,targetdatapath,musclesToDeactivate,debug);
 
-% compensatedSmoothExcit = smoothexcitationsignal(compensatedExcit);
+if (smoothExcitations == 1)
+    compensatedExcitions = smoothexcitationsignal(compensatedExcit);
+else
+    compensatedExcitions = compensatedExcit;
+end
 
 [compensatedICPForw,compensatedICVForw,compensatedExcitForw] = ...
-    forwardsim(t,forwardModelName,compensatedExcit,musclesToDeactivate,debug);
+    forwardsim(t,forwardModelName,compensatedExcitions,musclesToDeactivate,debug);
 
 %---------------------------EXCITATION PLOTS--------------------------------
 for iplot= 1:1

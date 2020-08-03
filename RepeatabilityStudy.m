@@ -11,10 +11,10 @@
 % are shown below in the MUSCLES TO DEACTIVATE section below.
 
 %-------------------------SCRIPT DEFINITIONS------------------------------  
-simDur  = 0.75;
+simDur  = 0.5;
 dt = 0.001;
 t = [0:dt:simDur];
-debug = 1; % stops sim before run in artisnyth to view.
+debug = 0; % stops sim before run in artisnyth to view.
 %-------------------------MUSCLE DEFINITIONS------------------------------  
 muscles = createmusclestruct('Muscle Info\musclekey.csv'); 
 
@@ -28,17 +28,22 @@ rightJawClosers = muscles([13 15 17 19 21 23]);
 leftJawClosers = muscles([14 16 18 20 22 24]);
 jawClosers = muscles([13 14 15 16 17 18 19 20 21 22 23 24]);
 
-musclesToDeactivate = muscles([])
+% Masseter and Pterygoids
+rightMassPter = muscles([7 9 11 13 15]);
+leftmasseterandpter = muscles([8 10 12 14 16]);
+
+musclesToDeactivate = muscles([20 22 24]);
 %***********SIMULATION OUTPUT OPTIONS ------------------------------------
 
 designer = '0';
 operation = 'Test';
-path = 'C:\develop\matlab\chewing-pertubation\Results\'
+path = 'C:\Users\kieran\develop\matlab\chewing-pertubation\Results\'
 outputFileName = strcat('Designer_', designer,'_', operation,'_', 'Result')
 fullpath = strcat(path,outputFileName)
 mkdir(fullpath);
+workingdir = '';
 
-targetdatapath = strcat('C:\develop\artisynth\Patient Data\lowerincisor_position_des',designer,'.txt')
+targetdatapath = strcat(workingdir,'\lowerincisor_position_des',designer,'.txt')
 
 plotTitle = strcat('Designer ', designer, ' Jaw Model Trajectory and Muscle Excitations');
 
@@ -52,13 +57,15 @@ forwardModelName = ...
 [invExcitations,invICP,invICV] = ...
     inversesim(t,invModelName,targetdatapath,musclesToDeactivate,debug);
 
+% preopSmoothExcit = smoothexcitationsignal(invExcitations);
+
 [frwICP,frwICV,frwExcit] = ...
 	forwardsim(t,forwardModelName,invExcitations,musclesToDeactivate,debug);
 
-csvwrite(strcat(fullpath,'\invSmoothExcit_',operation,'_Designer_',designer,'.csv'),invExcit);
-csvwrite(strcat(fullpath,'\invICP_',operation,'_Designer_',designer,'.csv'),invICP);
-csvwrite(strcat(fullpath,'\frwExcitations_',operation,'_Designer_',designer,'.csv'),frwExcit);
-csvwrite(strcat(fullpath,'\frwICP_',operation,'_Designer_',designer,'.csv'),frwICP);
+% csvwrite(strcat(fullpath,'\invSmoothExcit_',operation,'_Designer_',designer,'.csv'),invExcit);
+% csvwrite(strcat(fullpath,'\invICP_',operation,'_Designer_',designer,'.csv'),invICP);
+% csvwrite(strcat(fullpath,'\frwExcitations_',operation,'_Designer_',designer,'.csv'),frwExcit);
+% csvwrite(strcat(fullpath,'\frwICP_',operation,'_Designer_',designer,'.csv'),frwICP);
 
 %---------------------------EXCITATION PLOTS--------------------------------
 for iplot= 1:1
